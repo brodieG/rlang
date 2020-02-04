@@ -281,8 +281,11 @@ UQ <- function(x) {
   if(is_quosure(x)) {
     attr(x, 'armed') <- TRUE
   } else {
-    # this will need a print method
-    structure(x, class='armed', armed=TRUE)
+    # this will need a print method; need to do this
+    # in case it is a symbol to which we can't attach
+    # attributes.  Could just do it for symbols, but
+    # I'm being lazy
+    structure(list(x), class='armed', armed=TRUE)
   }
 }
 #' @rdname nse-force
