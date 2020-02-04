@@ -325,7 +325,29 @@ sexp* call_interp_impl(sexp* x, sexp* env, struct expansion_info info) {
 
   switch (info.op) {
   case OP_EXPAND_NONE:
-    if (r_typeof(x) != r_type_call) {
+    if (r_typeof(x) == r_type_symbol) {
+      // check if this is an armed expression that should be
+      // substituted with its evaluation in the environment
+
+      int try=0;
+      sexp* value = R_tryEvalSilent(x, env, &try);  // not API!  Need PROTECT?
+      if(
+        !try &&
+        Rf_getAttrib(value, Rf_install("armed")) != R_NilValue
+      ) {
+        Rprintf("armed\n");
+        if(rlang_is_quosure(value)) {
+          // Quosure just gets the attribute attached
+          r_poke_attribute(value, Rf_install("armed"), R_NilValue);
+          return value;
+        } else if(TYPEOF(value) == VECSXP && XLENGTH(value) == 1) {
+          // Other things become a structure with the attribute
+          return VECTOR_ELT(value, 0);
+        }
+      }
+      Rprintf("defused\n");
+      return x;
+    } else if (r_typeof(x) != r_type_call) {
       return x;
     } else {
       sexp* out = call_list_interp(x, env);
