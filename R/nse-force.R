@@ -280,6 +280,7 @@ NULL
 UQ <- function(x) {
   if(is_quosure(x)) {
     attr(x, 'armed') <- TRUE
+    x
   } else {
     # this will need a print method; need to do this
     # in case it is a symbol to which we can't attach
