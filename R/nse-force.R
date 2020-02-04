@@ -278,7 +278,12 @@ NULL
 #' @usage NULL
 #' @export
 UQ <- function(x) {
-  abort("`UQ()` can only be used within a quasiquoted argument")
+  if(is_quosure(x)) {
+    attr(x, 'armed') <- TRUE
+  } else {
+    # this will need a print method
+    structure(x, class='armed', armed=TRUE)
+  }
 }
 #' @rdname nse-force
 #' @usage NULL

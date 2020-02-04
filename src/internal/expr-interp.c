@@ -329,13 +329,16 @@ sexp* call_interp_impl(sexp* x, sexp* env, struct expansion_info info) {
       // check if this is an armed expression that should be
       // substituted with its evaluation in the environment
 
+      // this is not API.  I imagine we don't need protect as I can't
+      // see how evaluating a symbol can produce something that
+      // isn't protected (I guess possible via activeBinding, so would
+      // need to check for that or overprotect)
       int try=0;
-      sexp* value = R_tryEvalSilent(x, env, &try);  // not API!  Need PROTECT?
+      sexp* value = R_tryEvalSilent(x, env, &try);  
       if(
         !try &&
         Rf_getAttrib(value, Rf_install("armed")) != R_NilValue
       ) {
-        Rprintf("armed\n");
         if(rlang_is_quosure(value)) {
           // Quosure just gets the attribute attached
           r_poke_attribute(value, Rf_install("armed"), R_NilValue);
@@ -345,7 +348,6 @@ sexp* call_interp_impl(sexp* x, sexp* env, struct expansion_info info) {
           return VECTOR_ELT(value, 0);
         }
       }
-      Rprintf("defused\n");
       return x;
     } else if (r_typeof(x) != r_type_call) {
       return x;
